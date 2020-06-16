@@ -1,0 +1,12 @@
+--- Cargo.toml	2020-06-11 10:13:03.000000000 -0400
++++ Cargo.toml.new	2020-06-15 20:03:59.516734800 -0400
+@@ -91,9 +91,3 @@
+
+ [dependencies.stable_deref_trait]
+ version = "1.0.0"
+-
+-[dependencies.stacker]
+-version = "0.1.9"
+-[target."cfg(windows)".dependencies.winapi]
+-version = "0.3"
+-features = ["fileapi", "psapi"]

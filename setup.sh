@@ -1,4 +1,5 @@
 #!/bin/bash
-mkdir librustc_data_structures
-cd librustc_data_structures
-svn export https://github.com/rust-lang/rust.git/trunk/src/librustc_data_structures
+curl -L https://crates.io/api/v1/crates/rustc-ap-rustc_data_structures/664.0.0/download | tar xzf -
+mv rustc-ap-rustc_data_structures-664.0.0 rustc_data_structures
+patch rustc_data_structures/Cargo.toml patches/rustc_data_structures_cargo.patch
+patch rustc_data_structures/stack.rs patches/rustc_data_structures_stack.patch
