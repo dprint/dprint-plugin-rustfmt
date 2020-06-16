@@ -1,3 +1,4 @@
 target
 rustc_data_structures
 Cargo.lock
+rustfmt-nightly
