@@ -1,4 +1,4 @@
-use rustfmt_nightly::{Input, Session, Config, NewlineStyle, EmitMode, Edition, PartialConfig};
+use rustfmt_nightly::{Input, Session, Config, NewlineStyle, EmitMode, Edition};
 
 use std::path::PathBuf;
 use std::collections::HashMap;
@@ -6,13 +6,14 @@ use serde::{Serialize, Deserialize};
 use dprint_core::generate_plugin_code;
 use dprint_core::configuration::{GlobalConfiguration, ResolveConfigurationResult, NewLineKind, ConfigurationDiagnostic};
 
-static mut CONFIG: Option<Config> = None;
-
 #[derive(Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 struct Configuration {
+    // Unfortunately no resolved configuration at the moment because serializing
+    // rustfmt's PartialConfig configuration kept causing a panic
     #[serde(flatten)]
-    all_options: PartialConfig, // serializable
+    config: HashMap<String, String>,
+    #[serde(skip_serializing, skip_deserializing)]
+    rustfmt_config: Config,
 }
 
 fn resolve_config(
@@ -21,8 +22,10 @@ fn resolve_config(
 ) -> ResolveConfigurationResult<Configuration> {
     let mut rustfmt_config = Config::default();
     let mut diagnostics = Vec::new();
+
     rustfmt_config.set().edition(Edition::Edition2018);
 
+    // set dprint global configuration
     if let Some(line_width) = global_config.line_width {
         rustfmt_config.set().max_width(line_width as usize);
     }
@@ -41,30 +44,45 @@ fn resolve_config(
         });
     }
 
-    for (key, value) in config {
-        if Config::is_valid_key_val(&key, &value) {
-            rustfmt_config.override_value(&key, &value);
+    for (key, value) in config.iter() {
+        if key == "newLineKind" {
+            match value.as_str() {
+                "auto" => rustfmt_config.set().newline_style(NewlineStyle::Auto),
+                "lf" => rustfmt_config.set().newline_style(NewlineStyle::Unix),
+                "crlf" => rustfmt_config.set().newline_style(NewlineStyle::Windows),
+                "system" => rustfmt_config.set().newline_style(NewlineStyle::Native),
+                _ => {
+                    diagnostics.push(ConfigurationDiagnostic {
+                        property_name: String::from(key),
+                        message: format!("Invalid newline kind: {}", value),
+                    });
+                }
+            }
+            continue;
+        }
+
+        let key = match key.as_str() {
+            "lineWidth" => "max_width",
+            "useTabs" => "hard_tabs",
+            "indentWidth" => "tab_spaces",
+            _ => key,
+        };
+        if Config::is_valid_key_val(key, value) {
+            rustfmt_config.override_value(key, value);
         } else {
             let message = format!("Invalid key or value in configuration. Key: {}, Value: {}", key, value);
             diagnostics.push(ConfigurationDiagnostic {
-                property_name: key,
+                property_name: String::from(key),
                 message,
             });
         }
     }
 
     rustfmt_config.set().emit_mode(EmitMode::Stdout);
-    let final_config = Configuration {
-        all_options: rustfmt_config.all_options()
-    };
-
-    unsafe {
-        CONFIG.replace(rustfmt_config);
-    }
 
     ResolveConfigurationResult {
         diagnostics,
-        config: final_config,
+        config: Configuration { config, rustfmt_config },
     }
 }
 
@@ -95,13 +113,12 @@ fn get_plugin_license_text() -> String {
 fn format_text(
     _: &PathBuf,
     file_text: &str,
-    _: &Configuration,
+    config: &Configuration,
 ) -> Result<String, String> {
-    let mut out = Vec::with_capacity(file_text.len());
+    let mut out = Vec::new();
     {
         let input = Input::Text(String::from(file_text));
-        let config = unsafe { CONFIG.as_ref().expect("Expected to have configuration set at this point.").to_owned() };
-        let mut session = Session::new(config, Some(&mut out));
+        let mut session = Session::new(config.rustfmt_config.clone(), Some(&mut out));
         match session.format(input) {
             Err(err) => {
                 return Err(err.to_string());
@@ -111,7 +128,10 @@ fn format_text(
             }
         }
     }
-    Ok(String::from_utf8(out).unwrap())
+
+    // rustfmt adds this prefix, so just ignore it
+    let prefix = "stdin:\n\n";
+    Ok(String::from(std::str::from_utf8(&out[prefix.len()..]).unwrap()))
 }
 
 generate_plugin_code!();
