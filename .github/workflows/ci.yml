@@ -17,6 +17,8 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
       RUST_BACKTRACE: full
+      CFG_RELEASE: 1.45.0-nightly
+      CFG_RELEASE_CHANNEL: nightly
 
     steps:
     - uses: actions/checkout@v2
