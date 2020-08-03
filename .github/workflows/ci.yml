@@ -17,18 +17,18 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
       RUST_BACKTRACE: full
-      CFG_RELEASE: 1.45.0-nightly
+      CFG_RELEASE: 1.46.0-nightly
       CFG_RELEASE_CHANNEL: nightly
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Install and use nightly compiler
-      run: rustup default nightly
+      run: rustup default nightly-2020-06-14
 
     - name: Install wasm32 target
       if: matrix.config.kind == 'test_release'
-      run: rustup target add wasm32-unknown-unknown --toolchain nightly
+      run: rustup target add wasm32-unknown-unknown --toolchain nightly-2020-06-14
 
     - name: Run setup script
       run: |
@@ -56,7 +56,7 @@ jobs:
       run: cargo build --verbose
     - name: Build release
       if: matrix.config.kind == 'test_release'
-      run: cargo build --target wasm32-unknown-unknown --release --verbose
+      run: cargo build --target wasm32-unknown-unknown --features "wasm" --release --verbose
 
     - name: Test debug
       if: matrix.config.kind == 'test_debug'
