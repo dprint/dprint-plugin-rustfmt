@@ -1,21 +1,20 @@
 use rustfmt_nightly::{Config, NewlineStyle, EmitMode, Edition};
 
-use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use dprint_core::configuration::{GlobalConfiguration, ResolveConfigurationResult, NewLineKind, ConfigurationDiagnostic};
+use dprint_core::configuration::{GlobalConfiguration, ResolveConfigurationResult, NewLineKind, ConfigurationDiagnostic, ConfigKeyMap, ConfigKeyValue};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Configuration {
     // Unfortunately no resolved configuration at the moment because serializing
     // rustfmt's PartialConfig configuration kept causing a panic
     #[serde(flatten)]
-    pub(crate) config: HashMap<String, String>,
+    pub(crate) config: ConfigKeyMap,
     #[serde(skip_serializing, skip_deserializing)]
     pub(crate) rustfmt_config: Config,
 }
 
 pub fn resolve_config(
-    config: HashMap<String, String>,
+    config: ConfigKeyMap,
     global_config: &GlobalConfiguration,
 ) -> ResolveConfigurationResult<Configuration> {
     let mut rustfmt_config = Config::default();
@@ -44,15 +43,23 @@ pub fn resolve_config(
 
     for (key, value) in config.iter() {
         if key == "newLineKind" {
-            match value.as_str() {
-                "auto" => rustfmt_config.set().newline_style(NewlineStyle::Auto),
-                "lf" => rustfmt_config.set().newline_style(NewlineStyle::Unix),
-                "crlf" => rustfmt_config.set().newline_style(NewlineStyle::Windows),
-                "system" => rustfmt_config.set().newline_style(NewlineStyle::Native),
+            match value {
+                ConfigKeyValue::String(value) => match value.as_str() {
+                    "auto" => rustfmt_config.set().newline_style(NewlineStyle::Auto),
+                    "lf" => rustfmt_config.set().newline_style(NewlineStyle::Unix),
+                    "crlf" => rustfmt_config.set().newline_style(NewlineStyle::Windows),
+                    "system" => rustfmt_config.set().newline_style(NewlineStyle::Native),
+                    _ => {
+                        diagnostics.push(ConfigurationDiagnostic {
+                            property_name: String::from(key),
+                            message: format!("Invalid newline kind: {}", value),
+                        });
+                    }
+                },
                 _ => {
                     diagnostics.push(ConfigurationDiagnostic {
                         property_name: String::from(key),
-                        message: format!("Invalid newline kind: {}", value),
+                        message: String::from("Newline kind must be a string."),
                     });
                 }
             }
@@ -65,8 +72,9 @@ pub fn resolve_config(
             "indentWidth" => "tab_spaces",
             _ => key,
         };
-        if Config::is_valid_key_val(key, value) {
-            rustfmt_config.override_value(key, value);
+        let value = key_value_to_string(value);
+        if Config::is_valid_key_val(key, &value) {
+            rustfmt_config.override_value(key, &value);
         } else {
             let message = format!("Invalid key or value in configuration. Key: {}, Value: {}", key, value);
             diagnostics.push(ConfigurationDiagnostic {
@@ -81,5 +89,13 @@ pub fn resolve_config(
     ResolveConfigurationResult {
         diagnostics,
         config: Configuration { config, rustfmt_config },
+    }
+}
+
+fn key_value_to_string(value: &ConfigKeyValue) -> String {
+    match value {
+        ConfigKeyValue::String(value) => value.clone(),
+        ConfigKeyValue::Number(value) => value.to_string(),
+        ConfigKeyValue::Bool(value) => value.to_string(),
     }
 }
