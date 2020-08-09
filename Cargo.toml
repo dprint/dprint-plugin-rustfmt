@@ -11,7 +11,7 @@ crate-type = ["lib", "cdylib"]
 wasm = ["serde_json", "dprint-core/wasm"]
 
 [dependencies]
-dprint-core = { version = "0.27.0", features = [] }
+dprint-core = { version = "0.28.0", features = [] }
 rustfmt-nightly = { version = "=1.4.18" }
 serde = { version = "1.0.88", features = ["derive"] }
 serde_json = { version = "1.0", optional = true }
