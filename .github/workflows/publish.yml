@@ -29,22 +29,3 @@ jobs:
           git config user.email "dsherret@users.noreply.github.com"
           git commit -m "dprint-plugin-rustfmt ${{ steps.get_tag_version.outputs.TAG_VERSION }}"
           git push origin master
-
-      # CARGO PUBLISH
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Cache cargo
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cargo login
-      run: cargo login ${{ secrets.CRATES_TOKEN }}
-
-    - name: Cargo publish
-      run: cargo publish
