@@ -17,23 +17,18 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
       RUST_BACKTRACE: full
-      CFG_RELEASE: 1.46.0-nightly
       CFG_RELEASE_CHANNEL: nightly
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install and use nightly compiler
-      run: rustup default nightly-2020-06-14
+    - name: Install toolchain
+      run: rustup show # This will install the toolchain from the `rust-toolchain` file
 
-    - name: Install wasm32 target
-      if: matrix.config.kind == 'test_release'
-      run: rustup target add wasm32-unknown-unknown --toolchain nightly-2020-06-14
-
-    - name: Run setup script
+    - name: Extract Rust release version and set CFG_RELEASE env variable
       run: |
-        chmod +x setup.sh
-        ./setup.sh
+        # See https://sed.js.org/?gist=733942438b671befe20b6e7b5dfac57f for an explanation of the regex
+        echo "CFG_RELEASE=$(cargo --version | sed -rn 's/cargo\s(.*)\s\(.*\)/\1/p')" >> $GITHUB_ENV
 
     - name: Cache cargo
       uses: actions/cache@v2
@@ -49,7 +44,7 @@ jobs:
       run: cargo build --verbose
     - name: Build release
       if: matrix.config.kind == 'test_release'
-      run: cargo build --target wasm32-unknown-unknown --features "wasm" --release --verbose
+      run: cargo build --target wasm32-unknown-unknown --release --verbose
 
     - name: Test debug
       if: matrix.config.kind == 'test_debug'
