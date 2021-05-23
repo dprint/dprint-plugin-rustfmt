@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - os: ubuntu-16.04
+          - os: ubuntu-latest
             kind: test_release
           - os: macOS-latest
             kind: test_release
@@ -106,9 +106,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: bvm/gh-action@v1.1.0
     - name: Checkout
       uses: actions/checkout@v2
+    - uses: bvm/gh-action@v1.1.0
     - name: Download artifacts
       uses: actions/download-artifact@v2
 
