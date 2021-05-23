@@ -7,14 +7,12 @@ edition = "2018"
 [lib]
 crate-type = ["lib", "cdylib"]
 
-[features]
-wasm = ["serde_json", "dprint-core/wasm"]
-
 [dependencies]
-dprint-core = { version = "0.28.0", features = [] }
-rustfmt-nightly = { version = "=1.4.18" }
+dprint-core = "0.28.0"
+rustfmt-nightly = { git = "https://github.com/rust-lang/rustfmt" }
 serde = { version = "1.0.88", features = ["derive"] }
-serde_json = { version = "1.0", optional = true }
 
-[patch.crates-io]
-rustc-ap-rustc_data_structures = { path = "rustc_data_structures" }
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+getrandom = { version = "0.2.2", features = ["js"] } # Need to activate JS feature for `getrandom` to compile on WASM
+serde_json = { version = "1.0" }
+dprint-core = { version = "0.28.0", features = ["wasm"] } # Activate `wasm` feature of `dprint-core` if we compile for wasm
