@@ -1,7 +1,10 @@
-use rustfmt_nightly::{Config, NewlineStyle, EmitMode, Edition};
+use rustfmt_nightly::{Config, Edition, EmitMode, NewlineStyle};
 
-use serde::{Serialize, Deserialize};
-use dprint_core::configuration::{GlobalConfiguration, ResolveConfigurationResult, NewLineKind, ConfigurationDiagnostic, ConfigKeyMap, ConfigKeyValue};
+use dprint_core::configuration::{
+    ConfigKeyMap, ConfigKeyValue, ConfigurationDiagnostic, GlobalConfiguration, NewLineKind,
+    ResolveConfigurationResult,
+};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Configuration {
@@ -76,7 +79,10 @@ pub fn resolve_config(
         if Config::is_valid_key_val(key, &value) {
             rustfmt_config.override_value(key, &value);
         } else {
-            let message = format!("Invalid key or value in configuration. Key: {}, Value: {}", key, value);
+            let message = format!(
+                "Invalid key or value in configuration. Key: {}, Value: {}",
+                key, value
+            );
             diagnostics.push(ConfigurationDiagnostic {
                 property_name: String::from(key),
                 message,
@@ -88,7 +94,10 @@ pub fn resolve_config(
 
     ResolveConfigurationResult {
         diagnostics,
-        config: Configuration { config, rustfmt_config },
+        config: Configuration {
+            config,
+            rustfmt_config,
+        },
     }
 }
 

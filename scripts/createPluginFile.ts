@@ -1,5 +1,5 @@
-import { createHash } from "https://deno.land/std@0.97.0/hash/mod.ts"
-import * as hex from "https://deno.land/std@0.97.0/encoding/hex.ts"
+import { createHash } from "https://deno.land/std@0.122.0/hash/mod.ts";
+import * as hex from "https://deno.land/std@0.122.0/encoding/hex.ts";
 
 const packageText = Deno.readTextFileSync("Cargo.toml");
 // version = "x.x.x"
