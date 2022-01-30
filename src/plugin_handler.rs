@@ -1,8 +1,8 @@
 use super::configuration::{resolve_config, Configuration};
 use dprint_core::configuration::{ConfigKeyMap, GlobalConfiguration, ResolveConfigurationResult};
 use dprint_core::plugins::{PluginHandler, PluginInfo};
-use dprint_core::types::ErrBox;
 use std::path::Path;
+use anyhow::Result;
 
 pub struct RustFmtPluginHandler {}
 
@@ -30,7 +30,7 @@ impl PluginHandler<Configuration> for RustFmtPluginHandler {
             file_names: vec![],
             help_url: "https://dprint.dev/plugins/rustfmt".to_string(),
             config_schema_url: "".to_string(),
-            update_url: "https://plugins.dprint.dev/dprint/dprint-plugin-rustfmt/latest.json".to_string(),
+            update_url: Some("https://plugins.dprint.dev/dprint/dprint-plugin-rustfmt/latest.json".to_string()),
         }
     }
 
@@ -45,8 +45,8 @@ impl PluginHandler<Configuration> for RustFmtPluginHandler {
         _: &Path,
         file_text: &str,
         config: &Configuration,
-        _: impl FnMut(&Path, String, &ConfigKeyMap) -> Result<String, ErrBox>,
-    ) -> Result<String, ErrBox> {
+        _: impl FnMut(&Path, String, &ConfigKeyMap) -> Result<String>,
+    ) -> Result<String> {
         super::format_text(file_text, config)
     }
 }

@@ -1,8 +1,9 @@
 use super::configuration::Configuration;
-use dprint_core::types::ErrBox;
+
+use anyhow::Result;
 use rustfmt_nightly::{Input, Session};
 
-pub fn format_text(file_text: &str, config: &Configuration) -> Result<String, ErrBox> {
+pub fn format_text(file_text: &str, config: &Configuration) -> Result<String> {
     let mut out = Vec::new();
     {
         let input = Input::Text(String::from(file_text));
@@ -20,7 +21,6 @@ pub fn format_text(file_text: &str, config: &Configuration) -> Result<String, Er
 #[cfg(test)]
 mod test {
     use dprint_core::configuration::resolve_global_config;
-    use dprint_core::configuration::GlobalConfiguration;
 
     use crate::configuration::resolve_config;
 

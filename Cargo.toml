@@ -15,6 +15,7 @@ required-features = ["process"]
 process = ["dprint-core/process"]
 
 [dependencies]
+anyhow = "1.0.53"
 dprint-core = "0.50.0"
 rustfmt-nightly = { git = "https://github.com/rust-lang/rustfmt", rev = "8b0b213cddb23a9bbe421b717d1a0e5fb3982712" }
 serde = { version = "1.0.135", features = ["derive"] }
