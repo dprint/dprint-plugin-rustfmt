@@ -1,0 +1,17 @@
+{
+  "incremental": true,
+  "indentWidth": 2,
+  "includes": ["**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,toml,rs}"],
+  "excludes": [
+    "**/node_modules",
+    "**/*-lock.json",
+    "**/target"
+  ],
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.62.1.wasm",
+    "https://plugins.dprint.dev/json-0.14.0.wasm",
+    "https://plugins.dprint.dev/markdown-0.12.1.wasm",
+    "https://plugins.dprint.dev/toml-0.5.3.wasm",
+    "https://plugins.dprint.dev/rustfmt-0.5.1.exe-plugin@c844fc16c507bba5ea99204b3e6e5a44d1c6a9be2577e63146515d769f06d8d3"
+  ]
+}
