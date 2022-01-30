@@ -15,11 +15,11 @@ required-features = ["process"]
 process = ["dprint-core/process"]
 
 [dependencies]
-dprint-core = "0.49.1"
-rustfmt-nightly = { git = "https://github.com/rust-lang/rustfmt", rev = "7913f13" }
+dprint-core = "0.50.0"
+rustfmt-nightly = { git = "https://github.com/rust-lang/rustfmt", rev = "8b0b213cddb23a9bbe421b717d1a0e5fb3982712" }
 serde = { version = "1.0.135", features = ["derive"] }
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 getrandom = { version = "0.2.2", features = ["js"] } # Need to activate JS feature for `getrandom` to compile on WASM
 serde_json = { version = "1.0" }
-dprint-core = { version = "0.49.1", features = ["wasm"] } # Activate `wasm` feature of `dprint-core` if we compile for wasm
+dprint-core = { version = "0.50.0", features = ["wasm"] } # Activate `wasm` feature of `dprint-core` if we compile for wasm

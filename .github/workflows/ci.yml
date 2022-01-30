@@ -56,11 +56,11 @@ jobs:
     # Build
     - name: Build release
       if: matrix.config.kind == 'test_release'
-      run: cargo build --bin dprint-plugin-rustfmt --features=process --release --verbose
+      run: cargo build --bin dprint-plugin-rustfmt --features=process --release
 
     - name: Test release
       if: matrix.config.kind == 'test_release'
-      run: cargo test --release --verbose
+      run: cargo test --release
 
     # Release
     - name: Pre-release (Linux)
@@ -139,7 +139,7 @@ jobs:
 
     - name: Get plugin file checksum
       id: get_plugin_file_checksum
-      run: echo "::set-output name=CHECKSUM::$(shasum -a 256 rustfmt.exe-plugin | awk '{print $1}')"
+      run: echo "::set-output name=CHECKSUM::$(shasum -a 256 plugin.exe-plugin | awk '{print $1}')"
 
     - name: Release
       uses: softprops/action-gh-release@v1
@@ -150,7 +150,7 @@ jobs:
           dprint-plugin-rustfmt-x86_64-apple-darwin.zip
           dprint-plugin-rustfmt-x86_64-unknown-linux-gnu.zip
           dprint-plugin-rustfmt-x86_64-pc-windows-msvc.zip
-          rustfmt.exe-plugin
+          plugin.exe-plugin
         body: |
           ## Install
 

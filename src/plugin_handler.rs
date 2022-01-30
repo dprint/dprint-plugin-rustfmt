@@ -30,6 +30,7 @@ impl PluginHandler<Configuration> for RustFmtPluginHandler {
             file_names: vec![],
             help_url: "https://dprint.dev/plugins/rustfmt".to_string(),
             config_schema_url: "".to_string(),
+            update_url: "https://plugins.dprint.dev/dprint/dprint-plugin-rustfmt/latest.json".to_string(),
         }
     }
 

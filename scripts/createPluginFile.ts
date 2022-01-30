@@ -17,7 +17,7 @@ const outputFile = {
     "linux-x86_64": getPlatformObject("dprint-plugin-rustfmt-x86_64-unknown-linux-gnu.zip"),
     "windows-x86_64": getPlatformObject("dprint-plugin-rustfmt-x86_64-pc-windows-msvc.zip"),
 };
-Deno.writeTextFile("rustfmt.exe-plugin", JSON.stringify(outputFile, undefined, 2) + "\n");
+Deno.writeTextFile("plugin.exe-plugin", JSON.stringify(outputFile, undefined, 2) + "\n");
 
 function getPlatformObject(zipFileName: string) {
     const fileBytes = Deno.readFileSync(zipFileName);
