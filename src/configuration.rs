@@ -35,14 +35,13 @@ pub fn resolve_config(
     if let Some(indent_width) = global_config.indent_width {
         rustfmt_config.set().tab_spaces(indent_width as usize);
     }
-    if let Some(new_line_kind) = global_config.new_line_kind {
-        rustfmt_config.set().newline_style(match new_line_kind {
-            NewLineKind::Auto => NewlineStyle::Auto,
-            NewLineKind::LineFeed => NewlineStyle::Unix,
-            NewLineKind::CarriageReturnLineFeed => NewlineStyle::Windows,
-            NewLineKind::System => NewlineStyle::Native,
-        });
-    }
+
+    rustfmt_config.set().newline_style(match global_config.new_line_kind {
+        Some(NewLineKind::Auto) => NewlineStyle::Auto,
+        Some(NewLineKind::LineFeed) | None => NewlineStyle::Unix,
+        Some(NewLineKind::CarriageReturnLineFeed) => NewlineStyle::Windows,
+        Some(NewLineKind::System) => NewlineStyle::Native,
+    });
 
     for (key, value) in config.iter() {
         if key == "newLineKind" {

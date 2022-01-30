@@ -11,11 +11,9 @@ pub fn format_text(file_text: &str, config: &Configuration) -> Result<String> {
         session.format(input)?;
     }
 
+    let text = std::str::from_utf8(&out)?;
     // rustfmt adds this prefix, so just ignore it
-    let prefix = "stdin:\n\n";
-    Ok(String::from(
-        std::str::from_utf8(&out[prefix.len()..]).unwrap(),
-    ))
+    Ok(text.trim_start_matches("<stdin>:\n\n").trim_start_matches("stdin:\n\n").to_string())
 }
 
 #[cfg(test)]
@@ -31,5 +29,6 @@ mod test {
         let global_config = resolve_global_config(Default::default(), &Default::default()).config;
         let config = resolve_config(Default::default(), &global_config).config;
         assert_eq!(format_text("use test;", &config).unwrap(), "use test;\n");
+        assert_eq!(format_text("use test;\n", &config).unwrap(), "use test;\n");
     }
 }
