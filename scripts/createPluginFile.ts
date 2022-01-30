@@ -1,5 +1,5 @@
-import { createHash } from "https://deno.land/std@0.97.0/hash/mod.ts"
-import * as hex from "https://deno.land/std@0.97.0/encoding/hex.ts"
+import { createHash } from "https://deno.land/std@0.122.0/hash/mod.ts";
+import * as hex from "https://deno.land/std@0.122.0/encoding/hex.ts";
 
 const packageText = Deno.readTextFileSync("Cargo.toml");
 // version = "x.x.x"
@@ -17,7 +17,7 @@ const outputFile = {
     "linux-x86_64": getPlatformObject("dprint-plugin-rustfmt-x86_64-unknown-linux-gnu.zip"),
     "windows-x86_64": getPlatformObject("dprint-plugin-rustfmt-x86_64-pc-windows-msvc.zip"),
 };
-Deno.writeTextFile("rustfmt.exe-plugin", JSON.stringify(outputFile, undefined, 2) + "\n");
+Deno.writeTextFile("plugin.exe-plugin", JSON.stringify(outputFile, undefined, 2) + "\n");
 
 function getPlatformObject(zipFileName: string) {
     const fileBytes = Deno.readFileSync(zipFileName);

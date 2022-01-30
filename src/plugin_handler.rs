@@ -1,8 +1,8 @@
-use std::path::Path;
-use dprint_core::types::ErrBox;
-use dprint_core::configuration::{GlobalConfiguration, ResolveConfigurationResult, ConfigKeyMap};
+use super::configuration::{resolve_config, Configuration};
+use dprint_core::configuration::{ConfigKeyMap, GlobalConfiguration, ResolveConfigurationResult};
 use dprint_core::plugins::{PluginHandler, PluginInfo};
-use super::configuration::{Configuration, resolve_config};
+use std::path::Path;
+use anyhow::Result;
 
 pub struct RustFmtPluginHandler {}
 
@@ -27,13 +27,17 @@ impl PluginHandler<Configuration> for RustFmtPluginHandler {
             version: env!("CARGO_PKG_VERSION").to_string(),
             config_key: "rustfmt".to_string(),
             file_extensions: vec!["rs".to_string()],
+            file_names: vec![],
             help_url: "https://dprint.dev/plugins/rustfmt".to_string(),
-            config_schema_url: "".to_string()
+            config_schema_url: "".to_string(),
+            update_url: Some("https://plugins.dprint.dev/dprint/dprint-plugin-rustfmt/latest.json".to_string()),
         }
     }
 
     fn get_license_text(&mut self) -> String {
-        std::str::from_utf8(include_bytes!("../LICENSE")).unwrap().into()
+        std::str::from_utf8(include_bytes!("../LICENSE"))
+            .unwrap()
+            .into()
     }
 
     fn format_text(
@@ -41,8 +45,8 @@ impl PluginHandler<Configuration> for RustFmtPluginHandler {
         _: &Path,
         file_text: &str,
         config: &Configuration,
-        _: impl FnMut(&Path, String, &ConfigKeyMap) -> Result<String, ErrBox>,
-    ) -> Result<String, ErrBox> {
+        _: impl FnMut(&Path, String, &ConfigKeyMap) -> Result<String>,
+    ) -> Result<String> {
         super::format_text(file_text, config)
     }
 }

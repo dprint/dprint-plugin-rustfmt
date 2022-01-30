@@ -1,7 +1,10 @@
-use rustfmt_nightly::{Config, NewlineStyle, EmitMode, Edition};
+use rustfmt_nightly::{Config, Edition, EmitMode, NewlineStyle};
 
-use serde::{Serialize, Deserialize};
-use dprint_core::configuration::{GlobalConfiguration, ResolveConfigurationResult, NewLineKind, ConfigurationDiagnostic, ConfigKeyMap, ConfigKeyValue};
+use dprint_core::configuration::{
+    ConfigKeyMap, ConfigKeyValue, ConfigurationDiagnostic, GlobalConfiguration, NewLineKind,
+    ResolveConfigurationResult,
+};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Configuration {
@@ -32,14 +35,13 @@ pub fn resolve_config(
     if let Some(indent_width) = global_config.indent_width {
         rustfmt_config.set().tab_spaces(indent_width as usize);
     }
-    if let Some(new_line_kind) = global_config.new_line_kind {
-        rustfmt_config.set().newline_style(match new_line_kind {
-            NewLineKind::Auto => NewlineStyle::Auto,
-            NewLineKind::LineFeed => NewlineStyle::Unix,
-            NewLineKind::CarriageReturnLineFeed => NewlineStyle::Windows,
-            NewLineKind::System => NewlineStyle::Native,
-        });
-    }
+
+    rustfmt_config.set().newline_style(match global_config.new_line_kind {
+        Some(NewLineKind::Auto) => NewlineStyle::Auto,
+        Some(NewLineKind::LineFeed) | None => NewlineStyle::Unix,
+        Some(NewLineKind::CarriageReturnLineFeed) => NewlineStyle::Windows,
+        Some(NewLineKind::System) => NewlineStyle::Native,
+    });
 
     for (key, value) in config.iter() {
         if key == "newLineKind" {
@@ -76,7 +78,10 @@ pub fn resolve_config(
         if Config::is_valid_key_val(key, &value) {
             rustfmt_config.override_value(key, &value);
         } else {
-            let message = format!("Invalid key or value in configuration. Key: {}, Value: {}", key, value);
+            let message = format!(
+                "Invalid key or value in configuration. Key: {}, Value: {}",
+                key, value
+            );
             diagnostics.push(ConfigurationDiagnostic {
                 property_name: String::from(key),
                 message,
@@ -88,7 +93,10 @@ pub fn resolve_config(
 
     ResolveConfigurationResult {
         diagnostics,
-        config: Configuration { config, rustfmt_config },
+        config: Configuration {
+            config,
+            rustfmt_config,
+        },
     }
 }
 

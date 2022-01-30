@@ -1,11 +1,9 @@
-use rustfmt_nightly::{Input, Session};
-use dprint_core::types::ErrBox;
 use super::configuration::Configuration;
 
-pub fn format_text(
-    file_text: &str,
-    config: &Configuration,
-) -> Result<String, ErrBox> {
+use anyhow::Result;
+use rustfmt_nightly::{Input, Session};
+
+pub fn format_text(file_text: &str, config: &Configuration) -> Result<String> {
     let mut out = Vec::new();
     {
         let input = Input::Text(String::from(file_text));
@@ -13,7 +11,24 @@ pub fn format_text(
         session.format(input)?;
     }
 
+    let text = std::str::from_utf8(&out)?;
     // rustfmt adds this prefix, so just ignore it
-    let prefix = "stdin:\n\n";
-    Ok(String::from(std::str::from_utf8(&out[prefix.len()..]).unwrap()))
+    Ok(text.trim_start_matches("<stdin>:\n\n").trim_start_matches("stdin:\n\n").to_string())
+}
+
+#[cfg(test)]
+mod test {
+    use dprint_core::configuration::resolve_global_config;
+
+    use crate::configuration::resolve_config;
+
+    use super::*;
+
+    #[test]
+    fn test_format() {
+        let global_config = resolve_global_config(Default::default(), &Default::default()).config;
+        let config = resolve_config(Default::default(), &global_config).config;
+        assert_eq!(format_text("use test;", &config).unwrap(), "use test;\n");
+        assert_eq!(format_text("use test;\n", &config).unwrap(), "use test;\n");
+    }
 }
