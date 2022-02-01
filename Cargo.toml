@@ -1,6 +1,6 @@
 [package]
 name = "dprint-plugin-rustfmt"
-version = "0.5.2"
+version = "0.5.3"
 authors = ["David Sherret <dsherret@gmail.com>"]
 edition = "2021"
 

@@ -9,10 +9,6 @@ pub fn format_text(file_text: &str, config: &Configuration) -> Result<String> {
     let input = Input::Text(String::from(file_text));
     let mut session = Session::new(config.rustfmt_config.clone(), Some(&mut out));
     session.format(input)?;
-
-    if !session.has_no_errors() {
-      bail!("Rustfmt had errors.");
-    }
   }
 
   let text = std::str::from_utf8(&out)?;
@@ -20,6 +16,9 @@ pub fn format_text(file_text: &str, config: &Configuration) -> Result<String> {
   let text = text
     .trim_start_matches("<stdin>:\n\n")
     .trim_start_matches("stdin:\n\n");
+  if text.trim().is_empty() && file_text.trim().len() > 0 {
+    bail!("Rustfmt had errors.")
+  }
   Ok(text.to_string())
 }
 
