@@ -1,6 +1,6 @@
 use super::configuration::Configuration;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use rustfmt_nightly::{Input, Session};
 
 pub fn format_text(file_text: &str, config: &Configuration) -> Result<String> {
@@ -9,16 +9,18 @@ pub fn format_text(file_text: &str, config: &Configuration) -> Result<String> {
     let input = Input::Text(String::from(file_text));
     let mut session = Session::new(config.rustfmt_config.clone(), Some(&mut out));
     session.format(input)?;
+
+    if !session.has_no_errors() {
+      bail!("Rustfmt had errors.");
+    }
   }
 
   let text = std::str::from_utf8(&out)?;
   // rustfmt adds this prefix, so just ignore it
-  Ok(
-    text
-      .trim_start_matches("<stdin>:\n\n")
-      .trim_start_matches("stdin:\n\n")
-      .to_string(),
-  )
+  let text = text
+    .trim_start_matches("<stdin>:\n\n")
+    .trim_start_matches("stdin:\n\n");
+  Ok(text.to_string())
 }
 
 #[cfg(test)]
@@ -35,5 +37,12 @@ mod test {
     let config = resolve_config(Default::default(), &global_config).config;
     assert_eq!(format_text("use test;", &config).unwrap(), "use test;\n");
     assert_eq!(format_text("use test;\n", &config).unwrap(), "use test;\n");
+    assert_eq!(
+      format_text("let test = ...;", &config)
+        .err()
+        .unwrap()
+        .to_string(),
+      "Rustfmt had errors."
+    );
   }
 }
