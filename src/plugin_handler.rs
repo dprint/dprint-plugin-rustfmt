@@ -1,27 +1,22 @@
-use super::configuration::{resolve_config, Configuration};
-use anyhow::Result;
-use dprint_core::configuration::{ConfigKeyMap, GlobalConfiguration, ResolveConfigurationResult};
-use dprint_core::plugins::{PluginHandler, PluginInfo};
-use std::path::Path;
+use super::configuration::resolve_config;
+use super::configuration::Configuration;
+use dprint_core::configuration::ConfigKeyMap;
+use dprint_core::configuration::GlobalConfiguration;
+use dprint_core::configuration::ResolveConfigurationResult;
+use dprint_core::plugins::AsyncPluginHandler;
+use dprint_core::plugins::BoxFuture;
+use dprint_core::plugins::FormatRequest;
+use dprint_core::plugins::FormatResult;
+use dprint_core::plugins::Host;
+use dprint_core::plugins::PluginInfo;
+use std::sync::Arc;
 
-pub struct RustFmtPluginHandler {}
+pub struct RustFmtPluginHandler;
 
-impl RustFmtPluginHandler {
-  pub const fn new() -> Self {
-    RustFmtPluginHandler {}
-  }
-}
+impl AsyncPluginHandler for RustFmtPluginHandler {
+  type Configuration = Configuration;
 
-impl PluginHandler<Configuration> for RustFmtPluginHandler {
-  fn resolve_config(
-    &mut self,
-    config: ConfigKeyMap,
-    global_config: &GlobalConfiguration,
-  ) -> ResolveConfigurationResult<Configuration> {
-    resolve_config(config, global_config)
-  }
-
-  fn get_plugin_info(&mut self) -> PluginInfo {
+  fn plugin_info(&self) -> PluginInfo {
     PluginInfo {
       name: env!("CARGO_PKG_NAME").to_string(),
       version: env!("CARGO_PKG_VERSION").to_string(),
@@ -36,19 +31,34 @@ impl PluginHandler<Configuration> for RustFmtPluginHandler {
     }
   }
 
-  fn get_license_text(&mut self) -> String {
-    std::str::from_utf8(include_bytes!("../LICENSE"))
-      .unwrap()
-      .into()
+  fn license_text(&self) -> String {
+    include_str!("../LICENSE").to_string()
   }
 
-  fn format_text(
-    &mut self,
-    _: &Path,
-    file_text: &str,
-    config: &Configuration,
-    _: impl FnMut(&Path, String, &ConfigKeyMap) -> Result<String>,
-  ) -> Result<String> {
-    super::format_text(file_text, config)
+  fn resolve_config(
+    &self,
+    config: ConfigKeyMap,
+    global_config: GlobalConfiguration,
+  ) -> ResolveConfigurationResult<Configuration> {
+    let (_, diagnostics) = resolve_config(&config, &global_config);
+    ResolveConfigurationResult { diagnostics, config: Configuration {
+      config,
+      global_config,
+    } }
+  }
+
+  fn format(
+    &self,
+    request: FormatRequest<Self::Configuration>,
+    _host: Arc<dyn Host>,
+  ) -> BoxFuture<FormatResult> {
+    Box::pin(async move {
+      // range formatting not supported
+      if request.range.is_some() {
+        return Ok(None);
+      }
+
+      super::format::format_text(request.file_text, &request.config)
+    })
   }
 }

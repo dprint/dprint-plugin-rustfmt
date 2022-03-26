@@ -1,25 +1,26 @@
+use std::sync::Arc;
+
 use rustfmt_nightly::{Config, Edition, EmitMode, NewlineStyle};
 
 use dprint_core::configuration::{
   ConfigKeyMap, ConfigKeyValue, ConfigurationDiagnostic, GlobalConfiguration, NewLineKind,
-  ResolveConfigurationResult,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize)]
 pub struct Configuration {
   // Unfortunately no resolved configuration at the moment because serializing
   // rustfmt's PartialConfig configuration kept causing a panic
   #[serde(flatten)]
   pub(crate) config: ConfigKeyMap,
-  #[serde(skip_serializing, skip_deserializing)]
-  pub(crate) rustfmt_config: Config,
+  #[serde(skip_serializing)]
+  pub(crate) global_config: GlobalConfiguration,
 }
 
 pub fn resolve_config(
-  config: ConfigKeyMap,
+  config: &ConfigKeyMap,
   global_config: &GlobalConfiguration,
-) -> ResolveConfigurationResult<Configuration> {
+) -> (Config, Vec<ConfigurationDiagnostic>) {
   let mut rustfmt_config = Config::default();
   let mut diagnostics = Vec::new();
 
@@ -93,13 +94,7 @@ pub fn resolve_config(
 
   rustfmt_config.set().emit_mode(EmitMode::Stdout);
 
-  ResolveConfigurationResult {
-    diagnostics,
-    config: Configuration {
-      config,
-      rustfmt_config,
-    },
-  }
+  (rustfmt_config, diagnostics)
 }
 
 fn key_value_to_string(value: &ConfigKeyValue) -> String {

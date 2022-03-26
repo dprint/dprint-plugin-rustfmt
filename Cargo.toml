@@ -4,23 +4,12 @@ version = "0.5.3"
 authors = ["David Sherret <dsherret@gmail.com>"]
 edition = "2021"
 
-[lib]
-crate-type = ["lib", "cdylib"]
-
 [[bin]]
 name = "dprint-plugin-rustfmt"
-required-features = ["process"]
-
-[features]
-process = ["dprint-core/process"]
 
 [dependencies]
 anyhow = "1.0.53"
-dprint-core = "0.50.0"
+dprint-core = { version = "0.52.1", features = ["process"] }
 rustfmt-nightly = { git = "https://github.com/rust-lang/rustfmt", rev = "8b0b213cddb23a9bbe421b717d1a0e5fb3982712" }
 serde = { version = "1.0.135", features = ["derive"] }
-
-[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
-getrandom = { version = "0.2.2", features = ["js"] } # Need to activate JS feature for `getrandom` to compile on WASM
-serde_json = { version = "1.0" }
-dprint-core = { version = "0.50.0", features = ["wasm"] } # Activate `wasm` feature of `dprint-core` if we compile for wasm
+tokio = { version = "1.15.0", features = ["full", "time"] }

@@ -36,8 +36,7 @@ jobs:
     # Setup
     - uses: actions/checkout@v2
 
-    - name: Install toolchain
-      run: rustup show # This will install the toolchain from the `rust-toolchain` file
+    - uses: dtolnay/rust-toolchain@stable
 
     - name: Extract Rust release version and set CFG_RELEASE env variable
       run: |
@@ -45,18 +44,13 @@ jobs:
         echo "CFG_RELEASE=$(cargo --version | sed -rn 's/cargo\s(.*)\s\(.*\)/\1/p')" >> $GITHUB_ENV
 
     - name: Cache cargo
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        if: startsWith(github.ref, 'refs/tags/') != true
+        uses: Swatinem/rust-cache@v1
 
     # Build
     - name: Build release
       if: matrix.config.kind == 'test_release'
-      run: cargo build --bin dprint-plugin-rustfmt --features=process --release
+      run: cargo build --bin dprint-plugin-rustfmt --release
 
     - name: Test release
       if: matrix.config.kind == 'test_release'
@@ -131,7 +125,7 @@ jobs:
         echo "Windows zip: ${{needs.build.outputs.WINDOWS_ZIP_CHECKSUM}}"
 
     - name: Create plugin file
-      run: deno run --allow-read --allow-write scripts/createPluginFile.ts
+      run: deno run --allow-read=. --allow-write=. scripts/create_plugin_file.ts
 
     - name: Get tag version
       id: get_tag_version
