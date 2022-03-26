@@ -44,8 +44,8 @@ jobs:
         echo "CFG_RELEASE=$(cargo --version | sed -rn 's/cargo\s(.*)\s\(.*\)/\1/p')" >> $GITHUB_ENV
 
     - name: Cache cargo
-        if: startsWith(github.ref, 'refs/tags/') != true
-        uses: Swatinem/rust-cache@v1
+      if: startsWith(github.ref, 'refs/tags/') != true
+      uses: Swatinem/rust-cache@v1
 
     # Build
     - name: Build release
