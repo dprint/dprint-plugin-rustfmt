@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use rustfmt_nightly::{Config, Edition, EmitMode, NewlineStyle};
 
 use dprint_core::configuration::{
